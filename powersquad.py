@@ -42,6 +42,10 @@ with st.form("form_treino"):
         else:
             novo_treino = pd.DataFrame([[nome, data, treino]], columns=["nome", "data", "treino"])
             df = pd.concat([df, novo_treino], ignore_index=True)
+
+            # Converte a coluna data para datetime para evitar erro de tipos mistos
+            df["data"] = pd.to_datetime(df["data"], errors="coerce")
+
             save_data(df)
             st.success("✅ Treino registrado!")
 
