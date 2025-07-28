@@ -6,7 +6,10 @@ from datetime import datetime, timedelta
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv("treinos.csv", parse_dates=["data"])
+        df = pd.read_csv("treinos.csv")
+if not df.empty:
+    df["data"] = pd.to_datetime(df["data"], errors="coerce")
+
     except FileNotFoundError:
         df = pd.DataFrame(columns=["nome", "data", "treino"])
     return df
@@ -58,3 +61,17 @@ st.table(ranking_total)
 # Histórico de treinos
 st.markdown("### 📈 Histórico completo de treinos")
 st.dataframe(df.sort_values("data", ascending=False))
+# CSS para fundo branco
+st.markdown("""
+    <style>
+        body {
+            background-color: white !important;
+        }
+        .stApp {
+            background-color: white;
+        }
+        header, footer {
+            visibility: hidden;
+        }
+    </style>
+""", unsafe_allow_html=True)
