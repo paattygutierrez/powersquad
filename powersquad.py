@@ -25,8 +25,10 @@ def load_data():
         return df
 
     if not df.empty:
+        # Converte coluna data, forçando erros para NaT
         df["data"] = pd.to_datetime(df["data"], errors="coerce")
-        df = df.dropna(subset=["data"])  # remove linhas com datas inválidas
+        # Remove linhas com data inválida (NaT)
+        df = df.dropna(subset=["data"]).reset_index(drop=True)
     return df
 
 def save_data(df):
