@@ -78,7 +78,7 @@ st.subheader("🗑️ Área restrita: apagar treino (só você)")
 
 senha = st.text_input("Digite a senha para liberar exclusão:", type="password")
 
-if senha == "minhasenha123":  # TROQUE para sua senha segura aqui
+if senha == "Senha123":  # TROQUE para sua senha segura aqui
     if df.empty:
         st.info("Nenhum treino registrado para apagar.")
     else:
