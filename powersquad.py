@@ -8,11 +8,10 @@ st.set_page_config(page_title="Power Squad", layout="centered")
 st.markdown("""
 <div style='display: flex; align-items: center; gap: 10px;'>
     <img src='https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNm55c2J6b2hrYWxkdzI1Zmp1c2NqNjllNXFudXY4bDkzbm1sbGhtMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/sLs8Ll8Qx51xm/giphy.gif' width='150'>
-    <h1 style='margin: 0;'>Power Squad </h1>
+    <h1 style='margin: 0;'>Power Squad</h1>
 </div>
 """, unsafe_allow_html=True)
 
-# Funções para carregar e salvar dados
 def load_data():
     try:
         df = pd.read_csv("treinos.csv")
@@ -29,7 +28,6 @@ def save_data(df):
 
 df = load_data()
 
-# Formulário para adicionar treino
 with st.form("form_treino"):
     st.subheader("➕ Adicionar novo treino")
     nome = st.selectbox("Quem treinou?", ["Bru", "Caro", "Patty", "Sergio", "Sonia"])
@@ -47,7 +45,6 @@ with st.form("form_treino"):
             save_data(df)
             st.success("✅ Treino registrado!")
 
-# Ranking único com opção semanal ou acumulado
 st.subheader("🏆 Ranking")
 opcao_ranking = st.radio("Escolha o ranking para visualizar:", ("Ranking da semana", "Ranking acumulado"))
 
@@ -55,24 +52,28 @@ if opcao_ranking == "Ranking da semana":
     hoje = datetime.today()
     inicio_semana = st.date_input("Data inicial da semana", hoje - timedelta(days=hoje.weekday()))
     fim_semana = inicio_semana + timedelta(days=6)
-    df_filtrado = df[(df["data"] >= inicio_semana) & (df["data"] <= fim_semana)]
+
+    inicio_semana_ts = pd.Timestamp(inicio_semana)
+    fim_semana_ts = pd.Timestamp(fim_semana)
+
+    df_filtrado = df[(df["data"] >= inicio_semana_ts) & (df["data"] <= fim_semana_ts)]
 
     st.markdown(f"**Ranking da semana ({inicio_semana.strftime('%d/%m')} - {fim_semana.strftime('%d/%m')})**")
     ranking = df_filtrado["nome"].value_counts().reset_index()
     ranking.columns = ["Nome", "Treinos"]
     st.dataframe(ranking, use_container_width=True)
+
 else:
     st.markdown("**Ranking acumulado**")
     ranking = df["nome"].value_counts().reset_index()
     ranking.columns = ["Nome", "Treinos"]
     st.dataframe(ranking, use_container_width=True)
 
-# Área protegida para apagar treinos
 st.markdown("---")
 st.subheader("🗑️ Área restrita: apagar treino (só você)")
 senha = st.text_input("Digite a senha para liberar exclusão:", type="password")
 
-if senha == "minhasenha123":  # Troque para sua senha real
+if senha == "minhasenha123":  # Troque para sua senha segura
     if df.empty:
         st.info("Nenhum treino registrado para apagar.")
     else:
