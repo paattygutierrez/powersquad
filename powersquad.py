@@ -10,7 +10,7 @@ st.markdown(
     """
     <div style='display: flex; align-items: center; gap: 10px;'>
         <img src='https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNm55c2J6b2hrYWxkdzI1Zmp1c2NqNjllNXFudXY4bDkzbm1sbGhtMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/sLs8Ll8Qx51xm/giphy.gif' width='150'>
-        <h1 style='margin: 0;'>Power Squad </h1>
+        <h1 style='margin: 0;'>Power Squad</h1>
     </div>
     """,
     unsafe_allow_html=True
@@ -47,26 +47,29 @@ with st.form("form_treino"):
         save_data(df)
         st.success("✅ Treino registrado!")
 
-# --- Seleção da semana para ranking ---
-st.subheader("📅 Selecione a semana para ver o ranking")
-hoje = datetime.today()
-inicio_semana = st.date_input("Data inicial da semana", hoje - timedelta(days=hoje.weekday()))
-fim_semana = inicio_semana + timedelta(days=6)
+# --- Ranking único com opção ---
+st.subheader("🏆 Ranking")
+opcao_ranking = st.radio(
+    "Escolha o ranking para visualizar:",
+    ("Ranking da semana", "Ranking acumulado")
+)
 
-# Filtra treinos da semana selecionada
-df_semana = df[(df["data"] >= pd.to_datetime(inicio_semana)) & (df["data"] <= pd.to_datetime(fim_semana))]
+if opcao_ranking == "Ranking da semana":
+    hoje = datetime.today()
+    inicio_semana = st.date_input("Data inicial da semana", hoje - timedelta(days=hoje.weekday()))
+    fim_semana = inicio_semana + timedelta(days=6)
+    df_filtrado = df[(df["data"] >= pd.to_datetime(inicio_semana)) & (df["data"] <= pd.to_datetime(fim_semana))]
 
-# Ranking semanal
-st.markdown(f"### 🏆 Ranking da semana ({inicio_semana.strftime('%d/%m')} - {fim_semana.strftime('%d/%m')})")
-ranking_semana = df_semana["nome"].value_counts().reset_index()
-ranking_semana.columns = ["Nome", "Treinos"]
-st.dataframe(ranking_semana, use_container_width=True)
+    st.markdown(f"**Ranking da semana ({inicio_semana.strftime('%d/%m')} - {fim_semana.strftime('%d/%m')})**")
+    ranking = df_filtrado["nome"].value_counts().reset_index()
+    ranking.columns = ["Nome", "Treinos"]
+    st.dataframe(ranking, use_container_width=True)
 
-# Ranking acumulado
-st.markdown("### 🔥 Ranking acumulado")
-ranking_total = df["nome"].value_counts().reset_index()
-ranking_total.columns = ["Nome", "Treinos"]
-st.dataframe(ranking_total, use_container_width=True)
+else:
+    st.markdown("**Ranking acumulado**")
+    ranking = df["nome"].value_counts().reset_index()
+    ranking.columns = ["Nome", "Treinos"]
+    st.dataframe(ranking, use_container_width=True)
 
 # --- Área protegida para apagar treinos ---
 st.markdown("---")
