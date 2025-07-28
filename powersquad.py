@@ -26,6 +26,7 @@ def load_data():
 
     if not df.empty:
         df["data"] = pd.to_datetime(df["data"], errors="coerce")
+        df = df.dropna(subset=["data"])  # remove linhas com datas inválidas
     return df
 
 def save_data(df):
