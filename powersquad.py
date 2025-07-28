@@ -7,7 +7,7 @@ import os
 st.markdown(
     """
     <div style='display: flex; align-items: center; gap: 10px;'>
-        <img src='https://media.giphy.com/media/4Z3DdOZRTcXPa/giphy.gif' width='100'>
+        <img src='https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNm55c2J6b2hrYWxkdzI1Zmp1c2NqNjllNXFudXY4bDkzbm1sbGhtMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/sLs8Ll8Qx51xm/giphy.gif' width='100'>
         <h2 style='margin: 0;'>PowerSquad - Monitoramento de Treinos</h2>
     </div>
     """,
