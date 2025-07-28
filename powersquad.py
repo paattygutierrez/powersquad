@@ -28,72 +28,77 @@ def save_data(df):
 
 df = load_data()
 
-with st.form("form_treino"):
-    st.subheader("➕ Adicionar novo treino")
-    nome = st.selectbox("Quem treinou?", ["Bru", "Caro", "Patty", "Sergio", "Sonia"])
-    data = st.date_input("Data do treino", datetime.today())
-    treino = st.text_input("Tipo de treino (opcional)", "")
-    enviar = st.form_submit_button("Salvar treino")
+# Cria as abas
+tab1, tab2 = st.tabs(["Registro de Treino", "Visualizar Ranking"])
 
-    if enviar:
-        existe = ((df["nome"] == nome) & (df["data"] == pd.to_datetime(data))).any()
-        if existe:
-            st.warning(f"{nome} já registrou treino na data {data.strftime('%d/%m/%Y')}.")
+with tab1:
+    st.header("💪 Registrar Novo Treino")
+    with st.form("form_treino"):
+        nome = st.selectbox("Quem treinou?", ["Bru", "Caro", "Patty", "Sergio", "Sonia"])
+        data = st.date_input("Data do treino", datetime.today())
+        treino = st.text_input("Tipo de treino (opcional)", "")
+        enviar = st.form_submit_button("Salvar treino")
+
+        if enviar:
+            existe = ((df["nome"] == nome) & (df["data"] == pd.to_datetime(data))).any()
+            if existe:
+                st.warning(f"{nome} já registrou treino na data {data.strftime('%d/%m/%Y')}.")
+            else:
+                novo_treino = pd.DataFrame([[nome, data, treino]], columns=["nome", "data", "treino"])
+                df = pd.concat([df, novo_treino], ignore_index=True)
+
+                # Converte a coluna data para datetime para evitar erro de tipos mistos
+                df["data"] = pd.to_datetime(df["data"], errors="coerce")
+
+                save_data(df)
+                st.success("✅ Treino registrado!")
+    
+    st.markdown("---")
+    st.subheader("🗑️ Área restrita: apagar treino (só você)")
+    senha = st.text_input("Digite a senha para liberar exclusão:", type="password")
+
+    if senha == "minhasenha123":  # Troque para sua senha segura
+        if df.empty:
+            st.info("Nenhum treino registrado para apagar.")
         else:
-            novo_treino = pd.DataFrame([[nome, data, treino]], columns=["nome", "data", "treino"])
-            df = pd.concat([df, novo_treino], ignore_index=True)
+            df_display = df.reset_index()
+            df_display["data"] = df_display["data"].dt.strftime("%Y-%m-%d")
 
-            # Converte a coluna data para datetime para evitar erro de tipos mistos
-            df["data"] = pd.to_datetime(df["data"], errors="coerce")
+            treino_para_apagar = st.selectbox(
+                "Selecione o treino para apagar:",
+                df_display.apply(lambda row: f'{row["index"]}: {row["nome"]} - {row["data"]} - {row["treino"]}', axis=1)
+            )
 
-            save_data(df)
-            st.success("✅ Treino registrado!")
-
-st.subheader("🏆 Ranking")
-opcao_ranking = st.radio("Escolha o ranking para visualizar:", ("Ranking da semana", "Ranking acumulado"))
-
-if opcao_ranking == "Ranking da semana":
-    hoje = datetime.today()
-    inicio_semana = st.date_input("Data inicial da semana", hoje - timedelta(days=hoje.weekday()))
-    fim_semana = inicio_semana + timedelta(days=6)
-
-    inicio_semana_ts = pd.Timestamp(inicio_semana)
-    fim_semana_ts = pd.Timestamp(fim_semana)
-
-    df_filtrado = df[(df["data"] >= inicio_semana_ts) & (df["data"] <= fim_semana_ts)]
-
-    st.markdown(f"**Ranking da semana ({inicio_semana.strftime('%d/%m')} - {fim_semana.strftime('%d/%m')})**")
-    ranking = df_filtrado["nome"].value_counts().reset_index()
-    ranking.columns = ["Nome", "Treinos"]
-    st.dataframe(ranking, use_container_width=True)
-
-else:
-    st.markdown("**Ranking acumulado**")
-    ranking = df["nome"].value_counts().reset_index()
-    ranking.columns = ["Nome", "Treinos"]
-    st.dataframe(ranking, use_container_width=True)
-
-st.markdown("---")
-st.subheader("🗑️ Área restrita: apagar treino (só você)")
-senha = st.text_input("Digite a senha para liberar exclusão:", type="password")
-
-if senha == "minhasenha123":  # Troque para sua senha segura
-    if df.empty:
-        st.info("Nenhum treino registrado para apagar.")
+            if st.button("Apagar treino selecionado"):
+                idx = int(treino_para_apagar.split(":")[0])
+                df = df.drop(idx).reset_index(drop=True)
+                save_data(df)
+                st.success("🗑️ Treino apagado com sucesso! Atualize a página para ver a mudança.")
     else:
-        df_display = df.reset_index()
-        df_display["data"] = df_display["data"].dt.strftime("%Y-%m-%d")
+        if senha:
+            st.warning("Senha incorreta. Tente novamente.")
 
-        treino_para_apagar = st.selectbox(
-            "Selecione o treino para apagar:",
-            df_display.apply(lambda row: f'{row["index"]}: {row["nome"]} - {row["data"]} - {row["treino"]}', axis=1)
-        )
+with tab2:
+    st.header("🏆 Ranking dos Treinos")
+    opcao_ranking = st.radio("Escolha o ranking para visualizar:", ("Ranking da semana", "Ranking acumulado"))
 
-        if st.button("Apagar treino selecionado"):
-            idx = int(treino_para_apagar.split(":")[0])
-            df = df.drop(idx).reset_index(drop=True)
-            save_data(df)
-            st.success("🗑️ Treino apagado com sucesso! Atualize a página para ver a mudança.")
-else:
-    if senha:
-        st.warning("Senha incorreta. Tente novamente.")
+    if opcao_ranking == "Ranking da semana":
+        hoje = datetime.today()
+        inicio_semana = st.date_input("Data inicial da semana", hoje - timedelta(days=hoje.weekday()))
+        fim_semana = inicio_semana + timedelta(days=6)
+
+        inicio_semana_ts = pd.Timestamp(inicio_semana)
+        fim_semana_ts = pd.Timestamp(fim_semana)
+
+        df_filtrado = df[(df["data"] >= inicio_semana_ts) & (df["data"] <= fim_semana_ts)]
+
+        st.markdown(f"**Ranking da semana ({inicio_semana.strftime('%d/%m')} - {fim_semana.strftime('%d/%m')})**")
+        ranking = df_filtrado["nome"].value_counts().reset_index()
+        ranking.columns = ["Nome", "Treinos"]
+        st.dataframe(ranking, use_container_width=True)
+
+    else:
+        st.markdown("**Ranking acumulado**")
+        ranking = df["nome"].value_counts().reset_index()
+        ranking.columns = ["Nome", "Treinos"]
+        st.dataframe(ranking, use_container_width=True)
