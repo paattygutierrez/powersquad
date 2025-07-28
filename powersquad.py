@@ -74,11 +74,12 @@ else:
 
 # --- Área protegida para apagar treinos ---
 st.markdown("---")
-st.subheader("🗑️ Área restrita: apagar treino (só você)")
+st.subheader("🗑️ Área restrita: apagar treino")
 
 senha = st.text_input("Digite a senha para liberar exclusão:", type="password")
 
-if senha == "Senha123":  # TROQUE para sua senha segura aqui
+if senha == "Senha123":  # Troque aqui pela sua senha
+    # Código da área de exclusão
     if df.empty:
         st.info("Nenhum treino registrado para apagar.")
     else:
@@ -96,5 +97,5 @@ if senha == "Senha123":  # TROQUE para sua senha segura aqui
             save_data(df)
             st.success("🗑️ Treino apagado com sucesso! Atualize a página para ver a mudança.")
 else:
-    if senha != "":
-        st.error("Senha incorreta.")
+    if senha:
+        st.warning("Senha incorreta. Tente novamente.")
