@@ -5,13 +5,17 @@ from datetime import datetime, timedelta
 # Carrega os dados
 @st.cache_data
 def load_data():
+    import os
     try:
         df = pd.read_csv("treinos.csv")
-if not df.empty:
-    df["data"] = pd.to_datetime(df["data"], errors="coerce")
-
     except FileNotFoundError:
         df = pd.DataFrame(columns=["nome", "data", "treino"])
+        return df
+
+    # Fora do try: garante que a coluna 'data' seja datetime
+    if not df.empty:
+        df["data"] = pd.to_datetime(df["data"], errors="coerce")
+
     return df
 
 def save_data(df):
